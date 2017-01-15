@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hbi.core.saletest.mapper.SaleCustomerMapper">
+    <select id="selectSaleCustomer" parameterType="hbi.core.saletest.dto.SaleCustomer" resultMap="saleCustomer">
+       select CUSTOMER_ID,CUSTOMER_NUMBER,CUSTOMER_NAME,COMPANY_ID,ENABLED_FLAG,
+        (
+        select COMPANY_NAME
+        from hap_org_companys
+        where hap_ar_customers.COMPANY_ID=hap_org_companys.COMPANY_ID
+        ) companyName
+        from hap_ar_customers
+        where 1=1
+        <if test="companyId !=null">
+            AND COMPANY_ID=#{companyId}
+        </if>
+    </select>
+
+    <resultMap id="saleCustomer" type="hbi.core.saletest.dto.SaleCustomer" extends="com.hand.hap.mapper.StdMapper.STD">
+        <id property="customerId" column="CUSTOMER_ID"></id>
+        <result property="customerNumber" column="CUSTOMER_NUMBER"></result>
+        <result property="customerName" column="CUSTOMER_NAME"></result>
+        <result property="companyId" column="COMPANY_ID"></result>
+        <result property="companyName" column="companyName"></result>
+        <result property="enabledFlag" column="ENABLED_FLAG"></result>
+    </resultMap>
+</mapper>

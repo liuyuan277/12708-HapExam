@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="hbi.core.saletest.mapper.SaleOrderHeaderMapper">
+    <select id="selectOrderHeader" parameterType="hbi.core.saletest.dto.SaleOrderHeader" resultMap="orders">
+        SELECT o.HEADER_ID,o.ORDER_NUMBER,o.COMPANY_ID,o.ORDER_DATE,o.ORDER_STATUS,o.CUSTOMER_ID,
+        (
+        SELECT
+        co1.COMPANY_NAME
+        FROM
+        hap_org_companys co1
+        WHERE
+        o.COMPANY_ID = co1.COMPANY_ID
+        ) companyName,
+        (
+        SELECT
+        cu1.CUSTOMER_NAME
+        FROM
+        hap_ar_customers cu1
+        WHERE
+        o.CUSTOMER_ID = cu1.CUSTOMER_ID
+        ) customerName,
+        (
+        select round(sum(ol.ORDERD_QUANTITY*ol.UNIT_SELLING_PRICE),2)
+        from hap_om_order_lines_b ol
+        where o.HEADER_ID = ol.HEADER_ID
+        ) orderCount
+        FROM  hap_om_order_headers o
+        LEFT JOIN hap_org_companys co ON o.COMPANY_ID = co.COMPANY_ID
+        LEFT JOIN hap_ar_customers cu ON o.CUSTOMER_ID = cu.CUSTOMER_ID
+        <if test="inventoryItemId !=null">
+        inner JOIN (select  distinct(HEADER_ID) from hap_om_order_lines_b where INVENTORY_ITEM_ID=#{inventoryItemId}) ol1 ON o.HEADER_ID = ol1.HEADER_ID
+        </if>
+        WHERE   1=1
+        <if test="companyId !=null">
+            AND o.COMPANY_ID=#{companyId}
+        </if>
+        <if test="customerId !=null">
+            AND o.CUSTOMER_ID=#{customerId}
+        </if>
+        <if test="orderNumber !=null">
+            AND o.ORDER_NUMBER=#{orderNumber}
+        </if>
+        <if test="orderStatus !=null">
+            AND o.ORDER_STATUS=#{orderStatus}
+        </if>
+        <if test="headerId !=null">
+            AND o.HEADER_ID=#{headerId}
+        </if>
+
+    </select>
+    <resultMap id="orders" type="hbi.core.saletest.dto.SaleOrderHeader"  extends="com.hand.hap.mapper.StdMapper.STD">
+        <id property="headerId" column="HEADER_ID"></id>
+        <result property="orderNumber" column="ORDER_NUMBER"></result>
+        <result property="companyId" column="COMPANY_ID"></result>
+        <result property="orderDate" column="ORDER_DATE"></result>
+        <result property="orderStatus" column="ORDER_STATUS"></result>
+        <result property="customerId" column="CUSTOMER_ID"></result>
+        <result property="companyName" column="companyName"></result>
+        <result property="customerName" column="customerName"></result>
+        <result property="orderCount" column="orderCount"></result>
+        <result property="inventoryItemId" column="inventoryItemId"></result>
+    </resultMap>
+</mapper>
